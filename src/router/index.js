@@ -29,6 +29,7 @@ const routes = [
     component: () => import('@/views/LoginView.vue')
   },
   
+  
 ]
 
 const router = new VueRouter({

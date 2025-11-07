@@ -61,7 +61,7 @@ export default {
                 this.$store.commit('user/setToken', res.data.token)
                 this.$message.success('登录成功！');
                 // 注意：一定要等vuex token存好了，再跳首页
-                this.$router.push('/')
+                this.$router.push({ name: 'dashboard' })
             } catch (e) {
                 this.$message.error(e.response.data.message || '登录失败！');
             }

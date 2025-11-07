@@ -15,6 +15,10 @@ export default {
         removeToken(state) {
             state.token = ''
             removeToken()
+        },
+        logout(state) {
+            state.token = ''
+            removeToken()
         }
     }
 }
