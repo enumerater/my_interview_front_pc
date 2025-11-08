@@ -1,7 +1,7 @@
 <template>
   <div class="home">
 
-    <el-container>
+    <el-container class="home-container">
       <el-aside width="200px">
         <div class="home-title">白马面经</div>
         <el-menu class="el-menu-vertical-demo" background-color="#333" text-color="#fff" active-text-color="#ffd04b"
@@ -22,19 +22,19 @@
         </el-menu>
       </el-aside>
 
-      <el-header>
-        <div class="main-header">
-          <img src="../assets/logo.png" alt="" style="height: 32px; border-radius: 50%; margin-right: 20px;">
-          <p style="margin-right: 20px;">Administrator</p>
-          <i class="el-icon-switch-button" style="font-size: 32px;" title="退出" @click="logout"></i>
-        </div>
 
-      </el-header>
-
-      <el-main>
-        <router-view />
-      </el-main>
-
+      <el-container>
+        <el-header>
+          <div class="main-header">
+            <img src="../assets/logo.png" alt="" style="height: 32px; border-radius: 50%; margin-right: 20px;">
+            <p style="margin-right: 20px;">Administrator</p>
+            <i class="el-icon-switch-button" style="font-size: 32px;" title="退出" @click="logout"></i>
+          </div>
+        </el-header>
+        <el-main>
+          <router-view />
+        </el-main>
+      </el-container>
     </el-container>
   </div>
 </template>
@@ -61,11 +61,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.home-container {
+  height: 100vh;
+}
+
 .el-aside {
   background-color: #333;
-  position: fixed;
-  top: 0;
-  left: 0;
   height: 100%;
 }
 
@@ -77,24 +78,12 @@ export default {
 }
 
 .el-header {
-  position: fixed;
-  top: 0;
-  right: 200px;
-
   height: 60px;
-}
-
-.el-main {
-  position: fixed;
-  top: 60px;
-  left: 200px;
-  right: 0;
-  bottom: 0;
 }
 
 .main-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 
   margin: 20px 0;

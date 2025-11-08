@@ -17,3 +17,19 @@ export const showInterview = (id) => {
         }
     });
 }
+
+export const addInterview = (data) => {
+    return request({
+        url: "/admin/interview/create",
+        method: "post",
+        data,
+    });
+}
+
+export const updateInterview = (data) => {
+    return request({
+        url: "/admin/interview/update",
+        method: "put",
+        data,
+    });
+}

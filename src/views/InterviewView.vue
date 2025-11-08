@@ -7,7 +7,7 @@
         <el-card class="excel">
             <div class="excel-header">
                 <span>共 {{ total }} 条记录</span>
-                <el-button type="primary" size="mini" @click="isShowDrawer = true">添加面经</el-button>
+                <el-button type="primary" size="mini" @click="addInterview('add')">添加面经</el-button>
             </div>
             <div class="excel-body">
                 <el-table :data="tableData" stripe style="width: 100%">
@@ -24,9 +24,9 @@
                     <el-table-column prop="operation" label="操作">
                         <template #default="obj">
                             <div class="actions">
-                                <i class="el-icon-view"></i>
-                                <i class="el-icon-edit-outline"></i>
-                                <i class="el-icon-delete" @click="del(obj.row.id)"></i>
+                                <i class="el-icon-view" @click="preview('prev', obj.row.id)"></i>
+                                <i class="el-icon-edit-outline" @click="editInterview('edit', obj.row.id)"></i>
+                                <i class="el-icon-delete" @click="del('del', obj.row.id)"></i>
                             </div>
                         </template>
                     </el-table-column>
@@ -40,12 +40,26 @@
         </el-card>
 
 
-        <el-drawer title="我是标题" :visible="isShowDrawer" direction="rtl" :before-close="handleClose" :modal="false"
-            :modal-append-to-body="false">
-            <div>
-                <quill-editor ref="myQuillEditor">
-                </quill-editor>
-            </div>
+        <el-drawer :title="type" :visible="isShowDrawer" direction="rtl" :before-close="handleClose" :modal="true"
+            :modal-append-to-body="false" size="60%">
+            <el-form v-if="type === '预览面经'" :inline="true" class="demo-form-inline" label-position="right"
+                label-width="80px" :model="formprev">
+                <h1 class="contentt">标题：{{ formprev.stem }}</h1>
+                <div v-html="formprev.content" class="contentt" style="width: 85%;"></div>
+            </el-form>
+            <el-form v-else :inline="true" :model="formadd" class="demo-form-inline" :rules="rules"
+                label-position="right" label-width="80px">
+                <el-form-item label="标题" prop="stem">
+                    <el-input v-model="formadd.stem" placeholder="请输入面经标题"></el-input>
+                </el-form-item>
+                <el-form-item label="内容" prop="content">
+                    <quill-editor v-model="formadd.content" @blur="handleBlur" class="contentt"></quill-editor>
+                </el-form-item>
+                <el-form-item class="contentt">
+                    <el-button type="primary" @click="submitForm">提交</el-button>
+                    <el-button @click="handleClose">取消</el-button>
+                </el-form-item>
+            </el-form>
         </el-drawer>
 
     </div>
@@ -59,6 +73,8 @@ import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
 import { quillEditor } from 'vue-quill-editor'
+import { showInterview, addInterview, updateInterview } from "@/api/interview";
+
 
 
 export default {
@@ -72,6 +88,27 @@ export default {
             tableData: [],
 
             isShowDrawer: false,
+            type: '',
+            types: {
+                add: '添加面经',
+                edit: '修改面经',
+                prev: '预览面经',
+                del: '删除面经'
+            },
+            id: '',
+
+            formadd: {
+                stem: '',
+                content: ''
+            },
+            formprev: {
+                stem: '',
+                content: ''
+            },
+            rules: {
+                stem: [{ required: true, message: '请输入面经标题', trigger: 'blur' }],
+                content: [{ required: true, message: '请输入面经内容', trigger: 'blur' }]
+            }
 
         }
     },
@@ -86,15 +123,66 @@ export default {
             this.currentPage = page
         },
 
-        handleClose(done) {
+        handleClose() {
             this.$confirm('确认关闭？')
                 .then(() => {
-                    done(); // 执行关闭动画
-                    this.isShowDrawer = false; // 同步更新显示状态
+                    this.isShowDrawer = false
                 })
                 .catch(() => {
                 });
         },
+        handleBlur() {
+            this.$refs.form.validateField('content')
+        },
+        addInterview(type) {
+            this.isShowDrawer = true
+            this.type = this.types[type]
+        },
+        async preview(type, id) {
+            this.isShowDrawer = true
+            this.type = this.types[type]
+            const res = await showInterview(id)
+            this.formprev = res.data
+            this.id = id
+
+        },
+        async editInterview(type, id) {
+            this.isShowDrawer = true
+            this.type = this.types[type]
+            const res = await showInterview(id)
+            this.formadd = res.data
+            this.id = id
+
+        },
+        del(type, id) {
+            this.$message("没有权限删除")
+            console.log(type, id);
+            this.id = id
+        },
+        async submitForm() {
+            if (this.type === this.types.add) {
+                try {
+                    await addInterview(this.formadd)
+                    this.$message.success('添加成功')
+                    this.handleClose()
+                }
+                catch (error) {
+                    console.log(error);
+                    this.$message.error(error.response.data.message)
+                }
+            }
+            else if (this.type === this.types.edit) {
+                try {
+                    await updateInterview({ id: this.id, ...this.formadd })
+                    this.$message.success('修改成功')
+                    this.handleClose()
+                }
+                catch (error) {
+                    console.log(error);
+                    this.$message.error(error.response.data.message)
+                }
+            }
+        }
 
 
 
@@ -115,6 +203,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::deep .el-drawer {
+    width: 985px;
+}
+
 .home-breadcrumb {
     margin-left: 20px;
 }
@@ -143,5 +235,15 @@ export default {
     display: flex;
     justify-content: center;
     margin: 20px auto;
+}
+
+.quill-editor {
+    ::v-deep .ql-editor {
+        height: 300px;
+    }
+}
+
+.contentt {
+    margin-left: 80px;
 }
 </style>
